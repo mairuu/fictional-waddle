@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { browser } from '$app/env';
-	import { afterNavigate, disableScrollHandling } from '$app/navigation';
+	import { disableScrollHandling } from '$app/navigation';
 	import { clamp } from '~/lib/utils/math';
 	import { get_chapter_image } from '~/lib/utils/neko';
 	import { repository } from '~/lib/data/repository';
@@ -19,13 +19,19 @@
 
 	const dao_available$ = repository.dao_available$;
 
+	const APP_BAR_HEIGHT = 48;
+
 	const cal_scroll_y = (content_elm: HTMLElement, progress: number) => {
-		return progress * (content_elm.clientHeight - window.innerHeight) + content_elm.offsetTop;
+		return (
+			progress * (content_elm.clientHeight - window.innerHeight) +
+			(content_elm.offsetTop - APP_BAR_HEIGHT)
+		);
 	};
 
 	const cal_progeress = (content_elm: HTMLElement) => {
 		const progress =
-			(window.scrollY - content_elm.offsetTop) / (content_elm.clientHeight - window.innerHeight);
+			(window.scrollY - content_elm.offsetTop + APP_BAR_HEIGHT) /
+			(content_elm.clientHeight - window.innerHeight);
 
 		return clamp(0, progress, 1);
 	};
@@ -110,15 +116,15 @@
 </AppHeader>
 
 <main class="pt-12">
-	<div class="my-6 mx-auto max-w-[600px] px-4">
-		<h1 class="my-6 mx-4 text-center text-3xl font-bold leading-10">
+	<header class="my-16 mx-auto max-w-[600px] px-4">
+		<h1 class="my-16 mx-4 text-center text-3xl font-bold leading-10">
 			{project.chapters[curr_chapter_index].name}
 		</h1>
-		<hr class="my-6" />
-	</div>
+		<hr class="my-16" />
+	</header>
 
 	{#if chapter.content.type === 'image'}
-		<div class="image--content my-6 flex flex-col items-center gap-1" bind:this={content_elm}>
+		<div class="image--content flex flex-col items-center gap-1" bind:this={content_elm}>
 			{#each chapter.content.data as e (e.filename)}
 				<LazyImage
 					src={get_chapter_image(project.info.id, chapter.info.id, e.filename)}
@@ -130,8 +136,11 @@
 	{/if}
 
 	{#if chapter.content.type === 'text'}
-		<div class="mx-auto my-6 max-w-[600px] font-[Sarabun] text-xl font-light">
-			<div class="text--content my-6 overflow-hidden px-4" bind:this={content_elm}>
+		<div class="mx-auto max-w-[600px]">
+			<div
+				class="text--content overflow-hidden px-4 font-[Sarabun] text-xl font-light leading-8"
+				bind:this={content_elm}
+			>
 				{@html chapter.content.data}
 			</div>
 		</div>
@@ -142,7 +151,7 @@
 
 		<a
 			href="/p/{project.info.id}/{next_chapter?.id || ''}"
-			class="flex min-h-[5rem] items-center justify-center border-2 border-dashed border-white/30 px-4 py-1  opacity-50 transition-opacity hover:bg-white/10 hover:opacity-80"
+			class="flex min-h-[5rem] items-center justify-center border-2 border-dashed border-white/30 px-4 py-1 opacity-50 transition-opacity hover:bg-white/10 hover:opacity-80"
 		>
 			{next_chapter ? 'ตอนถัดไป' : 'กลับ'}
 		</a>

@@ -14,8 +14,8 @@
 
 <AppHeader />
 
-<main class="mx-auto max-w-6xl p-4 pt-12">
-	<div class="mb-9 grid grid-cols-3 gap-2 pt-4 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))]">
+<main class="mx-auto max-w-6xl px-4 pt-12">
+	<div class="mb-8 grid grid-cols-3 gap-2 pt-4 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))]">
 		{#each $favorites$ || [] as { image_version, project_name, project_id } (project_id)}
 			<ProjectCard
 				link="/p/{project_id}"

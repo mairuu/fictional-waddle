@@ -20,7 +20,7 @@
 </div>
 
 <FixedRowList
-	class="mb-9 grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))]"
+	class="mb-8 grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))]"
 	width={160}
 	gap={8}
 	datas={result.data || []}

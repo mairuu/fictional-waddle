@@ -30,9 +30,9 @@
 
 <AppHeader />
 
-<main class="mx-auto max-w-6xl p-4 pt-12">
-	<h3 class="mb-4 text-2xl font-bold text-white">{title}</h3>
-	<div class="mb-9 grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))]">
+<main class="mx-auto max-w-6xl px-4 pt-12">
+	<h3 class="my-4 text-2xl font-bold">{title}</h3>
+	<div class="mb-8 grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))]">
 		{#each entries as entry (entry)}
 			<Readable readable={entry} let:data={resource}>
 				{#if resource.is_loading}

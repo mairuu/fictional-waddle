@@ -51,8 +51,8 @@
 
 <AppHeader />
 
-<main class="mx-auto max-w-6xl pb-4 pt-12">
-	<div class="flex flex-col gap-3 pt-4">
+<main class="mx-auto max-w-6xl pt-12">
+	<div class="mb-8 flex flex-col gap-3 pt-4">
 		{#each grouped as entries}
 			<div class="w-24 text-center">
 				{format_header(entries[0].read_at)}
