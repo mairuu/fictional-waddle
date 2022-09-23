@@ -1,5 +1,7 @@
 import type { Readable } from '~/lib/types/store';
 
+export { is_resource_error, is_resource_fulfilled, is_resource_pending } from './resource';
+
 export const is_function = (value: any): value is (...args: any[]) => any =>
 	typeof value === 'function';
 

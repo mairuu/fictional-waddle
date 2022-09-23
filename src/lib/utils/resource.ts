@@ -21,6 +21,29 @@ export interface ResourceError<T> {
 	is_loading: false;
 }
 
+export const resource_fulfilled = <T>(data: T): ResourceFulfilled<T> => ({
+	data,
+	err: null,
+	is_error: false,
+	is_loading: false
+})
+
+
+export const resource_pending = <T>(data: T | null = null): ResourcePending<T> => ({
+	data,
+	err: null,
+	is_error: false,
+	is_loading: true
+})
+
+export const resource_error = <T>(err: unknown, data: T | null = null): ResourceError<T> => ({
+	data,
+	err,
+	is_error: true,
+	is_loading: false
+})
+
+
 export const is_resource_fulfilled = <T>(res: Resource<T>): res is ResourceFulfilled<T> =>
 	!res.is_loading && !res.is_error;
 

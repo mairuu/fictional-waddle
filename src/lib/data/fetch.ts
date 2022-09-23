@@ -1,7 +1,13 @@
-import { is_resource_error, is_resource_fulfilled } from '~/lib/data/resource';
+import {
+	is_resource_error,
+	is_resource_fulfilled,
+	resource_error,
+	resource_fulfilled,
+	resource_pending,
+} from '~/lib/utils/resource';
 import { filter, first_of, map, tap, writable } from '~/lib/store';
 
-import type { Resource } from '~/lib/data/resource';
+import type { Resource } from '~/lib/utils/resource';
 import type { Readable } from '~/lib/types/store';
 
 interface CacheEntry<T> {
@@ -34,15 +40,7 @@ export const query = <T>(url: string, options: QueryOption<T> = {}): Readable<Re
 	let entry = entries.get(url) as CacheEntry<T> | undefined;
 	if (entry) return entry.store;
 
-	const { pipe, set, subscribe, update } = writable<Resource<T>>(
-		{
-			data: initail,
-			err: null,
-			is_error: false,
-			is_loading: true,
-		},
-		start
-	);
+	const { pipe, set, subscribe, update } = writable<Resource<T>>(resource_pending(initail), start);
 
 	entry = { store: { subscribe, pipe }, stale_at: -1, timeout: null };
 	entries.set(url, entry);
@@ -50,31 +48,17 @@ export const query = <T>(url: string, options: QueryOption<T> = {}): Readable<Re
 	async function revalidate() {
 		if (!entry) return;
 
-		update((e) => ({
-			data: e.data,
-			err: null,
-			is_error: false,
-			is_loading: true,
-		}));
+		update((e) => resource_pending(e.data));
 
 		try {
 			const res = await fetcher(url);
+			const data = await res.json();
 
-			set({
-				data: await res.json(),
-				err: null,
-				is_error: false,
-				is_loading: false,
-			});
+			set(resource_fulfilled(data));
 
 			entry.stale_at = Date.now() + revalidate_time;
 		} catch (err) {
-			update((e) => ({
-				data: e.data,
-				err,
-				is_error: true,
-				is_loading: false,
-			}));
+			update((e) => resource_error(err, e.data));
 		}
 	}
 
