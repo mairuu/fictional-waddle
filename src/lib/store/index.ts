@@ -1,6 +1,6 @@
 import { writable_impl } from './store_impl';
 
-import type { Readable, StartStopNotifier } from '~/lib/types/store';
+import type { Readable, StartStopNotifier, Unsubscriber } from '~/lib/types/store';
 
 export * from './operators';
 export * from './readables';
@@ -14,8 +14,14 @@ export const readable = <T>(value?: T, start?: StartStopNotifier<T>): Readable<T
 
 export const first_of = <T>(store: Readable<T>) =>
 	new Promise<T>((resolve) => {
-		const unsub = store.subscribe((new_value) => {
+		let unsub: Unsubscriber | null = null;
+		let is_resolved = false;
+
+		unsub = store.subscribe((new_value) => {
 			resolve(new_value);
-			setTimeout(() => unsub());
+			is_resolved = true;
+			unsub?.();
 		});
+
+		if (is_resolved) unsub();
 	});
