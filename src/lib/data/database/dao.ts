@@ -1,5 +1,5 @@
 import { open_database } from './database';
-import { filter, map, switch_map, tap, writable } from '~/lib/store';
+import { filter, switch_map, writable } from '~/lib/store';
 import { is_function } from '~/lib/utils/is';
 
 import type { IDBPCursorWithValue, IndexKey, IndexNames, StoreKey, StoreValue } from 'idb';
@@ -75,18 +75,13 @@ export class NekoDao {
 			return dep_ids?.some((id) => mut_ids.has(id));
 		};
 
-		const run = async () => handler(await this._neko_db);
-
-		const update_dependent = (result: QueryResult<T>) => {
-			deps = result.dep;
+		const run = async () => {
+			const { dep, value } = await handler(await this._neko_db);
+			deps = dep;
+			return value;
 		};
 
-		return this._mut$.pipe(
-			filter(should_rerun),
-			switch_map(run),
-			tap(update_dependent),
-			map((e) => e.value)
-		);
+		return this._mut$.pipe(filter(should_rerun), switch_map(run));
 	}
 
 	private async mutate<T>(handler: (db: NekoDB | null) => Promise<MutateResult<T> | undefined>) {
