@@ -1,5 +1,6 @@
 import { readable } from '.';
 import { from } from './readables';
+import { UNINITIALIZED_VALUE } from './store_impl';
 
 import type {
 	OperatorFunction,
@@ -22,7 +23,10 @@ export const filter: {
 } = <T>(predicate: (value: T) => unknown): OperatorFunction<T, T> => {
 	return ({ subscribe }) =>
 		readable<T>(undefined, (set) => {
-			return subscribe((new_value) => predicate(new_value) && set(new_value));
+			return subscribe((new_value) => {
+				if (predicate(new_value)) set(new_value);
+				else set(UNINITIALIZED_VALUE as T);
+			});
 		});
 };
 

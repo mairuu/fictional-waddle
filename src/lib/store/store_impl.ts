@@ -11,7 +11,7 @@ import type {
 	Updater,
 } from '~/lib/types/store';
 
-const UNINITIALIZED_VALUE = Symbol.for('UNINITIALIZED_VALUE');
+export const UNINITIALIZED_VALUE = Symbol.for('UNINITIALIZED_VALUE');
 
 const subscriber_queue: any[] = [];
 
