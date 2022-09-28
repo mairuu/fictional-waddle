@@ -21,34 +21,41 @@ export interface ResourceError<T> {
 	is_loading: false;
 }
 
-export const resource_fulfilled = <T>(data: T): ResourceFulfilled<T> => ({
-	data,
-	err: null,
-	is_error: false,
-	is_loading: false
-})
+export function resource_fulfilled<T>(data: T): ResourceFulfilled<T> {
+	return {
+		data,
+		err: null,
+		is_error: false,
+		is_loading: false,
+	};
+}
 
+export function resource_pending<T>(data: T | null = null): ResourcePending<T> {
+	return {
+		data,
+		err: null,
+		is_error: false,
+		is_loading: true,
+	};
+}
 
-export const resource_pending = <T>(data: T | null = null): ResourcePending<T> => ({
-	data,
-	err: null,
-	is_error: false,
-	is_loading: true
-})
+export function resource_error<T>(err: unknown, data: T | null = null): ResourceError<T> {
+	return {
+		data,
+		err,
+		is_error: true,
+		is_loading: false,
+	};
+}
 
-export const resource_error = <T>(err: unknown, data: T | null = null): ResourceError<T> => ({
-	data,
-	err,
-	is_error: true,
-	is_loading: false
-})
+export function is_resource_fulfilled<T>(res: Resource<T>): res is ResourceFulfilled<T> {
+	return !res.is_loading && !res.is_error;
+}
 
+export function is_resource_pending<T>(res: Resource<T>): res is ResourcePending<T> {
+	return res.is_loading && !res.is_error;
+}
 
-export const is_resource_fulfilled = <T>(res: Resource<T>): res is ResourceFulfilled<T> =>
-	!res.is_loading && !res.is_error;
-
-export const is_resource_pending = <T>(res: Resource<T>): res is ResourcePending<T> =>
-	res.is_loading && !res.is_error;
-
-export const is_resource_error = <T>(res: Resource<T>): res is ResourceError<T> =>
-	!res.is_loading && res.is_error;
+export function is_resource_error<T>(res: Resource<T>): res is ResourceError<T> {
+	return !res.is_loading && res.is_error;
+}

@@ -5,25 +5,14 @@
 <script lang="ts">
 	import { repository } from '~/lib/data/repository';
 	import { is_same_day, is_today } from '~/lib/utils/date';
-	import { get_project_thumbnail } from '~/lib/utils/neko';
+	import { format_date, format_readt_at, get_project_thumbnail } from '~/lib/utils/neko';
 
 	import { AppHeader } from '~/components/App';
 	import { IconPlayerPlay, IconTrash } from '~/components/Icons';
 
-	const read_at_formatter = Intl.DateTimeFormat('th', {
-		hour: '2-digit',
-		minute: '2-digit',
-	});
-
-	const day_formatter = Intl.DateTimeFormat('th', {
-		day: '2-digit',
-		month: 'numeric',
-		year: '2-digit',
-	});
-
-	const format_header = (n: number) => {
-		if (is_today(n)) return 'วันนี้';
-		return day_formatter.format(n);
+	const format_header = (date: number) => {
+		if (is_today(date)) return 'วันนี้';
+		return format_date(date);
 	};
 
 	const group_by = <T>(arr: T[] = [], is_same_group: (left: T, right: T) => unknown): T[][] => {
@@ -43,8 +32,7 @@
 		return grouped;
 	};
 
-	$: grouped =
-		group_by($histories$, (left, right) => is_same_day(left.read_at, right.read_at)) || [];
+	$: grouped = group_by($histories$, (left, right) => is_same_day(left.read_at, right.read_at));
 </script>
 
 <svelte:head>
@@ -70,7 +58,7 @@
 						/>
 						<div class="flex-1 self-center text-xs">
 							<strong class="line-clamp-2"> {project_name} </strong>
-							<span class="block pt-1">Ch. {chapter_no} - {read_at_formatter.format(read_at)}</span>
+							<span class="block pt-1">Ch. {chapter_no} - {format_readt_at(read_at)}</span>
 						</div>
 					</a>
 					<button

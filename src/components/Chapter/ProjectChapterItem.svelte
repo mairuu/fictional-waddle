@@ -1,7 +1,8 @@
 <svelte:options immutable />
 
 <script lang="ts">
-	import { format_relase_date, is_today } from '~/lib/utils/date';
+	import { is_today } from '~/lib/utils/date';
+	import { format_relase_date } from '~/lib/utils/neko';
 
 	import type { ProjectChapter, ProjectInfo } from '~/lib/types/nekopost';
 

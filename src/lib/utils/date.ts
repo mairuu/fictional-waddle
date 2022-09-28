@@ -1,7 +1,13 @@
-type DateInput = string | Date | number;
+export type DateInput = string | Date | number;
+
+export function to_date(input: DateInput) {
+	if (input instanceof Date) return input;
+
+	return new Date(input);
+}
 
 export function format_distance(date: DateInput) {
-	const mil = Date.now() - new Date(date).getTime();
+	const mil = Date.now() - to_date(date).getTime();
 	const sec = Math.trunc(mil / 1000);
 	const min = Math.round(sec / 60);
 
@@ -28,19 +34,10 @@ export function is_today(date: DateInput) {
 }
 
 export function is_same_day(left: DateInput, right: DateInput) {
-	left = new Date(left);
+	left = to_date(left);
 	left.setHours(0, 0, 0, 0);
-	right = new Date(right);
+	right = to_date(right);
 	right.setHours(0, 0, 0, 0);
 
 	return left.getTime() === right.getTime();
 }
-
-export const format_relase_date = (() => {
-	const formatter = Intl.DateTimeFormat('th', {
-		year: 'numeric',
-		month: 'short',
-		day: 'numeric',
-	});
-	return (date: DateInput) => formatter.format(new Date(date));
-})();

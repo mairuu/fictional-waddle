@@ -16,9 +16,8 @@
 	import { blur } from 'svelte/transition';
 	import { browser } from '$app/env';
 	import { repository } from '~/lib/data/repository';
-	import { format_relase_date } from '~/lib/utils/date';
 	import { is_non_nullable } from '~/lib/utils/is';
-	import { get_project_media, get_project_thumbnail } from '~/lib/utils/neko';
+	import { get_project_media, get_project_thumbnail, format_relase_date } from '~/lib/utils/neko';
 
 	import type { ModalApi } from '~/components/Modal';
 	import type { PageData } from './$types';
