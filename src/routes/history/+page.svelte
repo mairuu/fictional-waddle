@@ -1,3 +1,7 @@
+<script lang="ts" context="module">
+	const histories$ = repository.get_histories();
+</script>
+
 <script lang="ts">
 	import { repository } from '~/lib/data/repository';
 	import { is_same_day, is_today } from '~/lib/utils/date';
@@ -5,8 +9,6 @@
 
 	import { AppHeader } from '~/components/App';
 	import { IconPlayerPlay, IconTrash } from '~/components/Icons';
-
-	const histories$ = repository.get_histories();
 
 	const read_at_formatter = Intl.DateTimeFormat('th', {
 		hour: '2-digit',

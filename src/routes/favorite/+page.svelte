@@ -1,11 +1,13 @@
-<script>
+<script lang="ts" context="module">
+	const favorites$ = repository.get_favorites();
+</script>
+
+<script lang="ts">
 	import { repository } from '~/lib/data/repository';
 	import { get_project_thumbnail } from '~/lib/utils/neko';
 
 	import { AppHeader } from '~/components/App';
 	import { ProjectCard } from '~/components/Card';
-
-	const favorites$ = repository.get_favorites();
 </script>
 
 <svelte:head>
