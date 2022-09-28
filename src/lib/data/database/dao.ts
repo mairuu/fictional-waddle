@@ -56,10 +56,14 @@ export class NekoDao {
 	}
 
 	private query<T>(handler: (db: NekoDB | null) => Promise<QueryResult<T>>): Readable<T> {
-		let deps: Mutated | undefined = undefined;
+		let deps: Mutated | null = null;
+		let prev: Mutated | null = null;
 
 		const should_rerun = (mut: Mutated | null) => {
-			if (!deps || !mut) return true;
+			if (!deps) return true;
+			if (!mut || mut === prev) return false;
+
+			prev = mut;
 
 			const mut_names = Object.keys(mut) as NekoStoreName[];
 			const dep_names = Object.keys(deps) as NekoStoreName[];
