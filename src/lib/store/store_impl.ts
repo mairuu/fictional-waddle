@@ -1,4 +1,4 @@
-import { noop, safe_not_equal } from 'svelte/internal';
+import { noop } from 'svelte/internal';
 
 import type {
 	UnaryFunction,
@@ -9,11 +9,10 @@ import type {
 	Unsubscriber,
 	Subscriber,
 	Updater,
+	Readable,
 } from '~/lib/types/store';
 
 export const UNINITIALIZED_VALUE = Symbol.for('UNINITIALIZED_VALUE');
-
-const subscriber_queue: any[] = [];
 
 const identity = <T>(value: T) => value;
 
@@ -25,58 +24,86 @@ const create_pipe = <T, R>(fns: UnaryFunction<any, any>[]): UnaryFunction<any, a
 	};
 };
 
+class ReadableImpl<T> implements Readable<T> {
+	private static subscriber_queue: any[] = [];
+
+	private stop: Unsubscriber | null = null;
+	private subscribers = new Set<readonly [Subscriber<T>, Invalidator<T>]>();
+
+	constructor(
+		protected value: T = UNINITIALIZED_VALUE as T,
+		private start: StartStopNotifier<T> = noop
+	) {
+		this._set = this._set.bind(this);
+	}
+
+	protected _set(new_value: T) {
+		if (this.value === new_value) return;
+		this.value = new_value;
+
+		if (!this.stop) return;
+		const subscriber_queue = ReadableImpl.subscriber_queue;
+		const run_queue = !subscriber_queue.length;
+
+		if (this.value !== UNINITIALIZED_VALUE)
+			for (const subscriber of this.subscribers) {
+				subscriber[1]();
+				subscriber_queue.push(subscriber, this.value);
+			}
+
+		if (run_queue) {
+			for (let i = 0; i < subscriber_queue.length; i += 2)
+				subscriber_queue[i][0](subscriber_queue[i + 1]);
+
+			subscriber_queue.length = 0;
+		}
+	}
+
+	subscribe(run: Subscriber<T>, invalidate: Invalidator<T> = noop) {
+		const subscriber = [run, invalidate] as const;
+		this.subscribers.add(subscriber);
+
+		if (this.subscribers.size === 1) {
+			this.stop = this.start(this._set) || noop;
+		}
+
+		if (this.value !== UNINITIALIZED_VALUE) {
+			run(this.value);
+		}
+
+		function unsubscribe(this: ReadableImpl<T>) {
+			this.subscribers.delete(subscriber);
+
+			if (this.subscribers.size === 0) {
+				this.stop?.();
+				this.stop = null;
+			}
+		}
+
+		return unsubscribe.bind(this);
+	}
+
+	pipe(...fns: OperatorFunction<any, any>[]) {
+		return create_pipe(fns)(this);
+	}
+}
+
+class WritableImpl<T> extends ReadableImpl<T> implements Writable<T> {
+	set(value: T) {
+		this._set(value);
+	}
+
+	update(updater: Updater<T>) {
+		this._set(updater(this.value));
+	}
+}
+
+export const readable_impl = <T>(
+	value: T = UNINITIALIZED_VALUE as T,
+	start: StartStopNotifier<T> = noop
+): Readable<T> => new ReadableImpl(value, start);
+
 export const writable_impl = <T>(
 	value: T = UNINITIALIZED_VALUE as T,
 	start: StartStopNotifier<T> = noop
-): Writable<T> => {
-	let stop: Unsubscriber | null = null;
-
-	const self: Writable<T> = { set, update, subscribe, pipe };
-	const subscribers = new Set<readonly [Subscriber<T>, Invalidator<T>]>();
-
-	function set(new_value: T) {
-		if (!safe_not_equal(value, new_value)) return;
-		value = new_value;
-
-		if (!stop) return;
-		const run_queue = !subscriber_queue.length;
-
-		for (const subscriber of subscribers) {
-			if (value === UNINITIALIZED_VALUE) continue;
-
-			subscriber[1]();
-			subscriber_queue.push(subscriber, value);
-		}
-
-		if (!run_queue) return;
-
-		for (let i = 0; i < subscriber_queue.length; i += 2) {
-			subscriber_queue[i][0](subscriber_queue[i + 1]);
-		}
-		subscriber_queue.length = 0;
-	}
-	function update(fn: Updater<T>) {
-		set(fn(value));
-	}
-	function subscribe(run: Subscriber<T>, invalidate: Invalidator<T> = noop) {
-		const subscriber = [run, invalidate] as const;
-		subscribers.add(subscriber);
-
-		if (subscribers.size === 1) stop = start(set) || noop;
-		if (value !== UNINITIALIZED_VALUE) run(value);
-
-		return () => {
-			subscribers.delete(subscriber);
-
-			if (subscribers.size === 0) {
-				stop?.();
-				stop = null;
-			}
-		};
-	}
-	function pipe(...fns: OperatorFunction<any, any>[]) {
-		return create_pipe(fns)(self);
-	}
-
-	return self;
-};
+): Writable<T> => new WritableImpl(value, start);

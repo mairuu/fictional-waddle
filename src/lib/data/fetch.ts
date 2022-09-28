@@ -40,25 +40,25 @@ export const query = <T>(url: string, options: QueryOption<T> = {}): Readable<Re
 	let entry = entries.get(url) as CacheEntry<T> | undefined;
 	if (entry) return entry.store;
 
-	const { pipe, set, subscribe, update } = writable<Resource<T>>(resource_pending(initail), start);
+	const store = writable<Resource<T>>(resource_pending(initail), start);
 
-	entry = { store: { subscribe, pipe }, stale_at: -1, timeout: null };
+	entry = { store, stale_at: -1, timeout: null };
 	entries.set(url, entry);
 
 	async function revalidate() {
 		if (!entry) return;
 
-		update((e) => resource_pending(e.data));
+		store.update((e) => resource_pending(e.data));
 
 		try {
 			const res = await fetcher(url);
 			const data = await res.json();
 
-			set(resource_fulfilled(data));
+			store.set(resource_fulfilled(data));
 
 			entry.stale_at = Date.now() + revalidate_time;
 		} catch (err) {
-			update((e) => resource_error(err, e.data));
+			store.update((e) => resource_error(err, e.data));
 		}
 	}
 
