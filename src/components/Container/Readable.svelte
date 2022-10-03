@@ -1,9 +1,10 @@
 <svelte:options immutable />
 
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import type { Observable, Teardown } from '~/lib/types/store';
 
-	import type { Readable } from '~/lib/types/store';
+	import { onDestroy } from 'svelte';
+	import { run_teardown } from '~/lib/store';
 
 	type T = $$Generic;
 
@@ -11,15 +12,15 @@
 		default: { data: T };
 	}
 
-	export let readable: Readable<T>;
+	export let readable: Observable<T>;
 
-	onDestroy(() => unsub?.());
+	onDestroy(() => run_teardown(unsub));
 
 	let data: T;
-	let unsub: () => void | undefined;
+	let unsub: Teardown;
 
 	$: {
-		unsub?.();
+		run_teardown(unsub);
 		unsub = readable.subscribe((d) => (data = d));
 	}
 </script>

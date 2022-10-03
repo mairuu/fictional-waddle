@@ -1,5 +1,6 @@
-import { error } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
+
+import { error } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async (ev) => {
 	const _url = ev.url.searchParams.get('url');

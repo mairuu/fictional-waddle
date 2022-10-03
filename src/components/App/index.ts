@@ -1,1 +1,1 @@
-export { default as AppHeader } from './AppHeader.svelte';
+export { default as AppHeader, APP_BAR_HEIGHT } from './AppHeader.svelte';

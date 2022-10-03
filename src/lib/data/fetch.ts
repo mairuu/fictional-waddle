@@ -1,3 +1,7 @@
+import type { Resource } from '~/lib/utils/resource';
+import type { Observable } from '~/lib/types/store';
+
+import { browser } from '$app/env';
 import {
 	is_resource_error,
 	is_resource_fulfilled,
@@ -5,19 +9,18 @@ import {
 	resource_fulfilled,
 	resource_pending,
 } from '~/lib/utils/resource';
-import { filter, first_of, map, tap, writable } from '~/lib/store';
-
-import type { Resource } from '~/lib/utils/resource';
-import type { Readable } from '~/lib/types/store';
+import { filter, first_of, map, create_writable } from '~/lib/store';
 
 interface CacheEntry<T> {
-	store: Readable<Resource<T>>;
+	store: Observable<Resource<T>>;
 	timeout: ReturnType<typeof setTimeout> | null;
 	stale_at: number;
 }
 
+export type Fetcher = (info: RequestInfo, init?: RequestInit) => Promise<Response>;
+
 export interface QueryOption<T> {
-	fetcher?: (info: RequestInfo, init?: RequestInit) => Promise<Response>;
+	fetcher?: Fetcher;
 	initail?: T;
 	keep_time?: number;
 	revalidate_time?: number;
@@ -28,21 +31,29 @@ const entries = new Map<string, CacheEntry<unknown>>();
 
 const is_stale = (cache: CacheEntry<unknown>) => cache.stale_at < Date.now();
 
-export const query = <T>(url: string, options: QueryOption<T> = {}): Readable<Resource<T>> => {
+const DEFAULT_KEEP_TIME = browser
+	? 1000 * 60 * 5 //  5 minutes on client
+	: 1000 * 60 * 1; // 1 munute  on server;
+
+const DEFAULT_REVALIDATE_TIME = 1000 * 60 * 1;
+
+export const query = <T>(url: string, options: QueryOption<T> = {}): Observable<Resource<T>> => {
 	const {
 		fetcher = fetch,
 		initail = null,
-		keep_time = 1000 * 60 * 5,
-		revalidate_time = 1000 * 60 * 1,
+		keep_time = DEFAULT_KEEP_TIME,
+		revalidate_time = DEFAULT_REVALIDATE_TIME,
 		revalidate_if_stale = true,
 	} = options;
 
-	let entry = entries.get(url) as CacheEntry<T> | undefined;
-	if (entry) return entry.store;
+	if (entries.has(url)) {
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		return entries.get(url)!.store;
+	}
 
-	const store = writable<Resource<T>>(resource_pending(initail), start);
+	const store = create_writable<Resource<T>>(resource_pending(initail), start);
 
-	entry = { store, stale_at: -1, timeout: null };
+	const entry: CacheEntry<T> = { store, stale_at: -1, timeout: null };
 	entries.set(url, entry);
 
 	async function revalidate() {
@@ -63,8 +74,6 @@ export const query = <T>(url: string, options: QueryOption<T> = {}): Readable<Re
 	}
 
 	function start() {
-		if (!entry) return;
-
 		if (entry.timeout) {
 			clearTimeout(entry.timeout);
 			entry.timeout = null;
@@ -73,8 +82,10 @@ export const query = <T>(url: string, options: QueryOption<T> = {}): Readable<Re
 		if (revalidate_if_stale && is_stale(entry)) revalidate();
 
 		return () => {
-			if (entry && !entry.timeout) {
-				entry.timeout = setTimeout(() => entries.delete(url), keep_time);
+			if (!entry.timeout) {
+				entry.timeout = setTimeout(() => {
+					entries.delete(url);
+				}, keep_time);
 			}
 		};
 	}
@@ -82,13 +93,13 @@ export const query = <T>(url: string, options: QueryOption<T> = {}): Readable<Re
 	return entry.store;
 };
 
-export const first_fulfilled = <T>(readable: Readable<Resource<T>>) =>
+export const first_fulfilled = async <T>(src: Observable<Resource<T>>): Promise<T> =>
 	first_of(
-		readable.pipe(
-			tap((res) => {
+		src.pipe(
+			filter(((res) => {
 				if (is_resource_error(res)) throw res.err;
-			}),
-			filter(is_resource_fulfilled),
+				return is_resource_fulfilled(res);
+			}) as typeof is_resource_fulfilled),
 			map((res) => res.data)
 		)
 	);

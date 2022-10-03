@@ -1,7 +1,8 @@
-import { json } from '@sveltejs/kit';
-
 import type { RequestHandler } from '@sveltejs/kit';
 import type { Chapter, ChapterContent } from '~/lib/types/nekopost';
+
+import { json, error } from '@sveltejs/kit';
+import { noop } from '~/lib/utils/noop';
 
 const normalize_content = (raw: any): ChapterContent => {
 	if (raw.pageItem)
@@ -33,17 +34,23 @@ export const GET: RequestHandler = async ({ params }) => {
 	req_headers.set('host', dest.host);
 	req_headers.set('referer', 'https://www.nekopost.net/');
 
-	const response = await fetch(dest, { headers: req_headers });
-	const data = await response.json();
+	try {
+		const response = await fetch(dest, { headers: req_headers });
+		const data = await response.json().catch(noop);
 
-	const info = {
-		id: parseInt(data.chapterId),
-		no: data.chapterNo,
-		project_id: parseInt(data.projectId),
-	};
-	const content = normalize_content(data);
+		if (!data) throw new Error('Chapter dose not exists!');
 
-	const chapter: Chapter = { info, content };
+		const info = {
+			id: parseInt(data.chapterId),
+			no: data.chapterNo,
+			project_id: parseInt(data.projectId),
+		};
+		const content = normalize_content(data);
 
-	return json(chapter, { headers: { 'cache-control': 'public, max-age=300' } });
+		const chapter: Chapter = { info, content };
+
+		return json(chapter, { headers: { 'cache-control': 'public, max-age=300' } });
+	} catch (err) {
+		throw error(500, err?.toString());
+	}
 };

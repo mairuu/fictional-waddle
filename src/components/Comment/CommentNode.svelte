@@ -1,10 +1,10 @@
 <script lang="ts">
+	import type { CommentNode } from '~/lib/types/comment';
+
 	import { slide } from 'svelte/transition';
 	import { format_distance } from '~/lib/utils/date';
 
 	import { IconArrowDiagonal } from '~/components/Icons';
-
-	import type { CommentNode } from '~/lib/types/comment';
 
 	export let node: CommentNode;
 	export let depth = 0;
@@ -48,7 +48,7 @@
 			</span>
 		</div>
 		{#if !collapse}
-			<div class="comment__body  mt-2 ml-9" transition:slide|local>{@html text}</div>
+			<div class="comment__body mt-2 ml-9" transition:slide|local>{@html text}</div>
 		{/if}
 	</article>
 
@@ -67,7 +67,7 @@
 	}
 	.comment__body p,
 	.comment__body blockquote {
-		line-height: 1.15;
+		line-height: 1.45;
 		margin-bottom: 1rem;
 	}
 	.comment__body p:first-child,

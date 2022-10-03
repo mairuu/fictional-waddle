@@ -1,20 +1,20 @@
 <svelte:options immutable />
 
 <script lang="ts">
+	import type { ProjectChapter, ProjectInfo } from '~/lib/types/nekopost';
+
 	import { is_today } from '~/lib/utils/date';
 	import { format_relase_date } from '~/lib/utils/neko';
-
-	import type { ProjectChapter, ProjectInfo } from '~/lib/types/nekopost';
 
 	interface $$Props extends svelte.JSX.HTMLProps<HTMLElement> {
 		chapter: ProjectChapter;
 		project: ProjectInfo;
-		current?: boolean;
+		is_active?: boolean;
 	}
 
 	export let chapter: ProjectChapter;
 	export let project: ProjectInfo;
-	export let current = false;
+	export let is_active = false;
 </script>
 
 <a
@@ -25,7 +25,7 @@
 >
 	<div class="min-w-[3rem] self-center px-2 text-center">{chapter.no}</div>
 	<div>
-		<div class="text-sm group-visited:text-sky-400" class:!text-green-500={current}>
+		<div class="text-sm group-visited:text-sky-400" class:!text-green-500={is_active}>
 			{chapter.name}
 		</div>
 		<div class="flex text-xs">

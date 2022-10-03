@@ -1,7 +1,11 @@
+<script lang="ts" context="module">
+	export const APP_BAR_HEIGHT = 48;
+</script>
+
 <script lang="ts">
 	import { browser } from '$app/env';
 	import { onMount } from 'svelte';
-	import { noop } from 'svelte/internal';
+	import { noop } from '~/lib/utils/noop';
 	import { clamp } from '~/lib/utils/math';
 
 	import AppDefaultHeader from './AppDefaultHeaders.svelte';

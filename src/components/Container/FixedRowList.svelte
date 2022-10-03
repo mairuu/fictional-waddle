@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Skeleton } from '~/components/Skeleton';
+	import { identity } from '~/lib/utils/identity';
+
+	import { ProjectCardSkeleton } from '~/components/Card';
 
 	type T = $$Generic;
 
@@ -17,7 +19,7 @@
 	export let gap = 0;
 	export let datas: $$Props['datas'];
 	export let width: $$Props['width'];
-	export let get_key: NonNullable<$$Props['get_key']> = (data) => data;
+	export let get_key: NonNullable<$$Props['get_key']> = identity;
 
 	let client_width: number;
 
@@ -32,7 +34,7 @@
 
 <div {...$$restProps} bind:clientWidth={client_width}>
 	{#if items.length === 0}
-		{#each Array(6) as _} <Skeleton class="aspect-[2/3] rounded-md" /> {/each}
+		{#each Array(6) as _} <ProjectCardSkeleton /> {/each}
 	{:else}
 		{#each items as data, i (get_key(data, i))} <slot {data} {i} /> {/each}
 	{/if}

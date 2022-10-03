@@ -25,13 +25,13 @@ export interface ProjectChapter {
 }
 
 export interface ProjectProvider {
-	id: string;
-	name: string;
+	user_id: string;
+	user_display_name: string;
 }
 
 export interface ProjectCategory {
-	id: string;
-	name: string;
+	cate_id: string;
+	cate_name: string;
 }
 
 export interface ProjectMedia {

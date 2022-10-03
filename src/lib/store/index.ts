@@ -1,24 +1,9 @@
-import { readable_impl, writable_impl } from './store_impl';
+export * from './impl/observable_impl';
+export * from './impl/readable_impl';
+export * from './impl/writable_impl';
+export * from './impl/subscriber_impl';
 
-import type { Readable, Unsubscriber } from '~/lib/types/store';
-
+export * from './observables';
 export * from './operators';
-export * from './readables';
 
-export const writable = writable_impl;
-
-export const readable = readable_impl;
-
-export const first_of = <T>(store: Readable<T>) =>
-	new Promise<T>((resolve) => {
-		let unsub: Unsubscriber | null = null;
-		let is_resolved = false;
-
-		unsub = store.subscribe((new_value) => {
-			resolve(new_value);
-			is_resolved = true;
-			unsub?.();
-		});
-
-		if (is_resolved) unsub();
-	});
+export { first_of } from './first_of';

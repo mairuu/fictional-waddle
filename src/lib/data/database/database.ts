@@ -1,8 +1,8 @@
-import { openDB } from 'idb';
-
 import type { DBSchema, IDBPDatabase, StoreNames } from 'idb';
 import type { ProjectType } from '~/lib/types/nekopost';
-import type { FavoriteEntity, HistoryEntity } from './entities';
+import type { FavoriteEntity, HistoryEntity } from '~/lib/data/database/entities';
+
+import { openDB } from 'idb';
 
 export type NekoDB = IDBPDatabase<NekoDBSchema>;
 

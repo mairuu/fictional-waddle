@@ -1,18 +1,15 @@
-import { query } from '~/lib/data/fetch';
-import { NekoDao, type Updater } from './database';
-
+import type { FavoriteEntity, HistoryEntity, GetAllOptions, Updater } from '~/lib/data/database';
+import type { Fetcher } from '~/lib/data/fetch';
 import type { CommentSorting, CommentTree } from '~/lib/types/comment';
 import type { Chapter, LatestChapter, Project, ProjectType } from '~/lib/types/nekopost';
-import type { FavoriteEntity, HistoryEntity, GetAllOptions } from './database';
+
+import { query } from '~/lib/data/fetch';
+import { NekoDao } from '~/lib/data/database';
 
 export class Repository {
 	private dao = new NekoDao();
 
-	fetcher: (info: RequestInfo, init?: RequestInit | undefined) => Promise<Response> = fetch;
-
-	get dao_available$() {
-		return this.dao.available$;
-	}
+	fetcher: Fetcher | undefined = fetch;
 
 	private fetch<T>(url: string) {
 		return query<T>(url, { fetcher: this.fetcher });
@@ -52,7 +49,7 @@ export class Repository {
 		return this.dao.get_all('favorites', { ...options, index_name: 'by_date_added' });
 	}
 
-	put_favorite(id: number, value: Updater<FavoriteEntity>): Promise<number | undefined> {
+	put_favorite(id: number, value: Updater<FavoriteEntity>) {
 		return this.dao.put('favorites', id, value);
 	}
 

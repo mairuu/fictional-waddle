@@ -1,6 +1,6 @@
-import { error } from '@sveltejs/kit';
-
 import type { RequestHandler } from '@sveltejs/kit';
+
+import { error } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async ({ url }) => {
 	const path = url.searchParams.get('path');
@@ -20,9 +20,13 @@ export const GET: RequestHandler = async ({ url }) => {
 	search.set('sort', sort);
 	search.set('format', 'tree');
 
-	const response = await fetch(dest, { headers: req_headers });
+	try {
+		const response = await fetch(dest, { headers: req_headers });
 
-	return new Response(response.body, {
-		headers: { 'content-type': 'application/json' },
-	});
+		return new Response(response.body, {
+			headers: { 'content-type': 'application/json' },
+		});
+	} catch (err) {
+		throw error(500, err?.toString());
+	}
 };

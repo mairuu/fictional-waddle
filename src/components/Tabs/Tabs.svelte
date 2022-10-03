@@ -12,17 +12,17 @@
 </script>
 
 <script lang="ts">
-	import { getContext, onDestroy, setContext } from 'svelte';
-	import { writable } from '~/lib/store';
-
 	import type { Writable } from '~/lib/types/store';
+
+	import { getContext, onDestroy, setContext } from 'svelte';
+	import { create_writable } from '~/lib/store';
 
 	interface $$Props extends svelte.JSX.HTMLProps<HTMLElement> {}
 
 	const tabs: object[] = [];
 	const panels: object[] = [];
-	const selected_tab = writable<object | null>(null);
-	const selected_panel = writable<object | null>(null);
+	const selected_tab = create_writable<object | null>(null);
+	const selected_panel = create_writable<object | null>(null);
 
 	setContext<TabsContext>(TABS, {
 		register_tab: () => {

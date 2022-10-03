@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { slide } from 'svelte/transition';
+
 	import { IconList } from '~/components/Icons';
 
 	import AppHeaderLink from './AppHeaderLink.svelte';
@@ -28,10 +28,7 @@
 	</button>
 
 	{#if open}
-		<div
-			class="absolute inset-x-0 top-12 z-0 h-screen bg-zinc-900 sm:hidden"
-			transition:slide|local={{ duration: 100 }}
-		>
+		<div class="absolute inset-x-0 top-12 z-0 h-screen bg-zinc-900 sm:hidden">
 			{#each links as { to, active_on, label }}
 				<AppHeaderLink {to} active={route_id === active_on}>{label}</AppHeaderLink>
 			{/each}
